@@ -1,9 +1,9 @@
-function [x,y] = NACAgenerator(mtot, ptot, ttot, fignum)
+function [x,y] = NACAgenerator(mtot, ptot, ttot, fignum, npanels)
 m = mtot / 100;
 p = ptot / 10;
 t = ttot / 100;
 
-xoc = linspace(0,1,100);
+xoc = linspace(0,1,npanels);
 yt = ( t / 0.2) .* ( 0.2969 .* sqrt(xoc) - 0.1260 .* xoc - 0.3516 .* xoc.^2 + 0.2843 .* xoc.^3 - 0.1036 .* xoc.^4);
 
 for i = 1: length(xoc)
@@ -23,8 +23,8 @@ xl = xoc + yt .* sin(zeta);
 yu = yc + yt .* cos(zeta);
 yl = yc - yt .* cos(zeta);
 
-x(:,1) = [xl(end:-1:1) xu];
-y(:,1) = [yl(end:-1:1) yu];
+x(:,1) = [fliplr(xl) xu(2:end)];
+y(:,1) = [fliplr(yl) yu(2:end)];
 
 figure(fignum);
 plot(x,y);
