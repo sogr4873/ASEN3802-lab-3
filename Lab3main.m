@@ -2,6 +2,8 @@ clc
 clear
 close all;
 
+
+
 %% Task 1
 % NACA 0018
 m0018 = 0;
@@ -103,8 +105,8 @@ junk3 = polyfit(alphas, cl0018,1);
 a0_0018 = junk3(1);
 aL0_0018 = 0;
 
-% find alpha(L=0) and a_0 based on TAT
-
-
-
-
+%% find alpha(L=0) and a_0 based on TAT
+% a_0l shoul be 0 for all since all symmetric
+[a_0l0006_TAT, a00006_TAT] = TAT(m0006,p0006,1000);
+[a_0l0012_TAT, a00012_TAT] = TAT(m0012,p0012,1000);
+[a_0l0018_TAT, a00018_TAT] = TAT(m0018,p0018,1000);
