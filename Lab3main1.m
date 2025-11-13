@@ -27,7 +27,7 @@ Predict_Cl = Vortex_Panel(x0012,y0012,5);
 
 TAT_Cl = @(a) 2*pi*(a*pi/180);
 goal = TAT_Cl(5);
-panels = 1:100;
+panels = 1:114;
 panel_crit = 0;
 for p = panels
     [testx0012,testy0012] = NACAgenerator(m0012,p0012,t0012,0012, p)
@@ -39,8 +39,8 @@ for p = panels
 end
 
 %% Task 3
-alphas = -10:1:10;  %range I chose    
-NP = 100;           
+alphas = -15:1:15;  %range i chose    
+NP = 114;           
 nTAT = 100;           % Integration points for TAT? might change 
 airfoils = {'NACA 0012','NACA 2412','NACA 4412'};
 geom = [0 0 12; 2 4 12; 4 4 12];  % [m p t]
@@ -59,11 +59,11 @@ for j = 1:3
     end
 
    
-   coeffs = polyfit(alphas(alphas >= -5 & alphas <= 5), ...
-                 Cl(alphas >= -5 & alphas <= 5, j), 1);
+    coeffs = polyfit((alphas(alphas >= -7 & alphas <= 7)), ...
+                 Cl(alphas >= -7 & alphas <= 7, j), 1);
 
     fits(j).a0_panel = coeffs(1);            % slope [per degree]
-    fits(j).aL0_panel = -coeffs(2)/coeffs(1);% zero-lift angle [deg]
+    fits(j).aL0_panel = (-coeffs(2)/coeffs(1));% zero-lift angle [deg]
 
 
     [aL0_TAT, a0_TAT] = TAT(m,p,nTAT);
@@ -72,27 +72,25 @@ for j = 1:3
 end
 
 
-figure(1); hold on; grid on; box on;
+figure(1); clf; hold on; grid on;
 colors = lines(3);
 
 for j = 1:3
   
-    plot(alphas, Cl(:,j), 'o', 'Color', colors(j,:), ...
-        'MarkerSize',4, 'DisplayName',[airfoils{j} ' (Panel)']);
+    
+    plot(alphas, Cl(:,j), 'o', 'Color', colors(j,:),'MarkerSize',4, 'DisplayName',[airfoils{j} ' (Panel)']);
 
-    % Linear-fit line
-    fit_line = polyval([fits(j).a0_panel, ...
-                        -fits(j).a0_panel*fits(j).aL0_panel], alphas);
+    % linearfit line
+    fit_line = polyval([fits(j).a0_panel, -fits(j).a0_panel*fits(j).aL0_panel], alphas);
     plot(alphas, fit_line, '-', 'Color', colors(j,:), 'LineWidth',1.5, ...
         'DisplayName',[airfoils{j} ' fit']);
 
-    % Thin Airfoil Theory line
+    % TAT line
     cl_TAT = fits(j).a0_TAT*(alphas - fits(j).aL0_TAT);
-    plot(alphas, cl_TAT, '--', 'Color', colors(j,:), 'LineWidth',1.2, ...
-        'DisplayName',[airfoils{j} ' TAT']);
+    plot(alphas, cl_TAT, '--', 'Color', colors(j,:), 'LineWidth',1.2,'DisplayName',[airfoils{j} ' TAT']);
 end
 xlabel('\alpha (deg)'); ylabel('c_l');
 title('Effect of Camber on Sectional Lift');
 legend('Location','northwest');
 
-
+hold off;
