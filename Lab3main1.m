@@ -59,8 +59,7 @@ for j = 1:3
     end
 
    
-    coeffs = polyfit((alphas(alphas >= -7 & alphas <= 7)), ...
-                 Cl(alphas >= -7 & alphas <= 7, j), 1);
+    coeffs = polyfit((alphas(alphas >= -7 & alphas <= 7)),Cl(alphas >= -7 & alphas <= 7, j), 1);
 
     fits(j).a0_panel = coeffs(1);            % slope [per degree]
     fits(j).aL0_panel = (-coeffs(2)/coeffs(1));% zero-lift angle [deg]
@@ -94,3 +93,4 @@ title('Effect of Camber on Sectional Lift');
 legend('Location','northwest');
 
 hold off;
+
