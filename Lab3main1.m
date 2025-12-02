@@ -59,7 +59,8 @@ for j = 1:3
     end
 
    
-    coeffs = polyfit((alphas(alphas >= -7 & alphas <= 7)),Cl(alphas >= -7 & alphas <= 7, j), 1);
+    coeffs = polyfit((alphas(alphas >= -7 & alphas <= 7)), ...
+                 Cl(alphas >= -7 & alphas <= 7, j), 1);
 
     fits(j).a0_panel = coeffs(1);            % slope [per degree]
     fits(j).aL0_panel = (-coeffs(2)/coeffs(1));% zero-lift angle [deg]
@@ -93,4 +94,48 @@ title('Effect of Camber on Sectional Lift');
 legend('Location','northwest');
 
 hold off;
+
+%% Part 3 Task 2
+%digitize from page 462 appedix 3 in book to get experimental data
+
+
+cl_exp = [-0.8 -0.6 -0.4 -0.2 0.0 0.2 0.4 0.6 0.8 1.0 1.2 1.4 1.6];
+cd_exp = [0.0118 0.0107 0.0098 0.0091 0.0088 0.0090 0.0096 0.0106 ...
+          0.0120 0.0145 0.0175 0.0215 0.0265];
+
+cd_from_cl = @(cl)interp1(cl_exp, cd_exp, cl, 'linear', 'extrap');
+
+alphas = -10:1:10;
+
+
+
+[x12,y12] = NACAgenerator(0,0,12, 0012, 120);
+
+for i = 1:length(alphas)
+    cl_alpha_p3(i) = Vortex_Panel(x12,y12, alphas(i));
+end
+
+cd_alpha = cd_from_cl(cl_alpha_p3);
+
+figure(5); hold on; 
+
+plot(cl_exp,cd_exp,'ko','MarkerFaceColor','w','DisplayName','Experimental Polar');
+plot(cl_alpha_p3,cd_alpha,'r-','LineWidth',2,'DisplayName','Model');
+xlabel('Section Lift Coefficient c_l');
+ylabel('Section Drag Coefficient c_d');
+title('NACA 0012 Drag Polar');
+
+
+
+figure(6); hold on;
+
+plot(alphas,cd_alpha,'b-','LineWidth',2,'DisplayName','c_d(\alpha)');
+xlabel('\alpha (deg)');
+ylabel('c_d');
+title('Profile Drag Coefficient vs Angle of Attack');
+
+
+
+
+
 
