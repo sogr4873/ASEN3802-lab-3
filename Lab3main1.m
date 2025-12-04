@@ -270,9 +270,9 @@ hold off;
 % task 3
 y = linspace(-b_p3/2,b_p3/2); %span
 c_y = cr_p3 - (((cr_p3 - ct_p3)/(b_p3/2)).*(abs(y))); %chord func spanwise
-
+S = (1/2) * (cr_p3 + ct_p3) * b_p3;
 for i = 1:length(alphas)
-    CD_0(i) = trapz(y,c_y.*cd_cl(i));
+    CD_0(i) = trapz(y,c_y.*cd_cl(i)) / S;
 end
 
 CD_p3 = CD_0 + c_Di_p3;
@@ -325,3 +325,30 @@ xlabel('\alpha (deg)');
 ylabel('CD_0');
 title('Profile Drag vs Angle of Attack');
 hold off;
+
+% task 4
+% thrust must equal profile drag, lift must equal weight, airspeed effects
+% cl, cd
+% altitude is at 10,000 ft, weight is 2500 lbs
+S_t4 = (1/2) * (cr_p3 + ct_p3) * b_p3;
+
+weight = 2500;
+
+rho_10k = 17.56*10^-4; %slugs/ft^3
+vel = zeros(1,length(c_L_p3));
+thrust = zeros(1,length(c_L_p3));
+for i = 1:length(c_L_p3)
+    vel(i) = sqrt((2*2500)/(rho_10k*c_L_p3(i)*S_t4));
+    thrust(i) = CD_p3(i)*(0.5)*((vel(i))^2)*rho_10k*S_t4;
+end
+
+vel_knots = vel.*(1/1.688);
+vel_knots = vel_knots(12:end);
+thrust = thrust(12:end);
+
+figure();
+grid on;
+plot(vel_knots,thrust, 'Color','red',LineWidth=1.2);
+xlabel('Air Speed [knots]');
+ylabel('Thrust Required [lbs]');
+title('Thrust Required for Steady Level Flight vs Airspeed');
