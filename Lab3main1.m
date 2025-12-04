@@ -110,7 +110,7 @@ aL0_0018 = 0;
 [a_0l0018_TAT, a00018_TAT] = TAT(m0018,p0018,1000);
 
 %% Task 3
-alphas = -10:1:10;  %range I chose    
+alphas = -15:1:20;  %range I chose    
 NP = 100;           
 nTAT = 100;           % Integration points for TAT? might change 
 airfoils = {'NACA 0012','NACA 2412','NACA 4412'};
@@ -218,7 +218,7 @@ legend('Location','northwest');
 
 %% Part 3
 
-% task 1
+%% task 1
 
 b_p3 = 36;
 cr_p3 = 5 + (4/12);
@@ -232,47 +232,51 @@ for i = 1:length(alphas)
 end
 
 figure(4);
-plot(alphas, c_L_p3,LineWidth=2);
+plot(alphas, c_L_p3);
 title('Coefficient of Lift vs. Angle of Attack for the Cessna 180');
 xlabel('\alpha (deg)')
 ylabel('C_L');
 
-% Task 2
+
+%% Task 2
 %digitize from page 462 appedix 3 in book to get experimental data
 cl_exp = readmatrix("NACA0012_cl_alpha_TESTALL.csv"); %cl vs alpha experimental data
 cd_exp = readmatrix("NACA0012_cd_cl.csv"); %cd vs cl
 
 cd_from_cl = @(cl)interp1(cd_exp(:,1), cd_exp(:,2), cl, 'linear', 'extrap'); % continuous cd vs cl func
 cl_from_alpha = @(a)interp1(cl_exp(:,1), cl_exp(:,2), a, 'linear', 'extrap'); % continuous cl vs alpha func
+cd_from_alpha = @(a)  cd_from_cl( cl_from_alpha(a) );
+cd_from_alpha_exp = cd_from_alpha(cl_exp(:,1));
+cd_from_alpha_t3 = cd_from_alpha(alphas);
 
-alphas = -10:1:10;
+alphas = -15:1:20;
 
-cd_cl = cd_from_cl(c_L_p3);
-
-figure(5); 
-hold on; 
-plot(cd_exp(:,1),cd_exp(:,2),'DisplayName','Experimental Polar');
-plot(c_L_p3,cd_cl,'r-','LineWidth',2,'DisplayName','Model');
-xlabel('Section Lift Coefficient c_l');
-ylabel('Section Drag Coefficient c_d');
-title('NACA 0012 Drag Polar');
-legend
-hold off;
+% figure(5); 
+% hold on; 
+% plot(cd_exp(:,1),cd_exp(:,2),'DisplayName','Experimental Polar');
+% plot(c_L_p3,cd_cl,'r-','LineWidth',2,'DisplayName','Model');
+% xlabel('Section Lift Coefficient c_l');
+% ylabel('Section Drag Coefficient c_d');
+% title('NACA 0012 Drag Polar');
+% legend
+% hold off;
 
 figure(6); 
 hold on;
-plot(alphas,cd_cl,'b-','LineWidth',2,'DisplayName','c_d(\alpha)');
+plot(cl_exp(:,1), cd_from_alpha_exp,'k','DisplayName','Model');
+fplot(cd_from_alpha, 'bo', 'DisplayName', 'Experimental Data');
 xlabel('\alpha (deg)');
-ylabel('c_d');
-title('Sectional Drag Coefficient vs Angle of Attack');
+ylabel('C_D_0');
+title('Profile Drag Coefficient vs Angle of Attack');
 hold off;
 
-% task 3
+%% task 3
 y = linspace(-b_p3/2,b_p3/2); %span
 c_y = cr_p3 - (((cr_p3 - ct_p3)/(b_p3/2)).*(abs(y))); %chord func spanwise
+
 S = (1/2) * (cr_p3 + ct_p3) * b_p3;
 for i = 1:length(alphas)
-    CD_0(i) = trapz(y,c_y.*cd_cl(i)) / S;
+    CD_0(i) = trapz(y,c_y.*cd_from_alpha_t3(i)) / S;
 end
 
 CD_p3 = CD_0 + c_Di_p3;
@@ -282,37 +286,36 @@ hold on;
 plot(alphas, CD_p3,LineWidth=2);
 plot(alphas, c_Di_p3,LineWidth=2);
 plot(alphas, CD_0,LineWidth=2);
-ylim([-1,2])
 hold off;
 title('Drag Coefficients vs. AoA');
 xlabel('\alpha (deg)');
 ylabel('C_D');
-legend('Total (C_D)', 'Induced (CD_i)', 'Profile (C_D0)');
+legend('Total (C_D)', 'Induced (C_D_i)', 'Profile (C_D_0)');
 
-% task 2 bonus: c_d is varying spanwise
+%% task 2 bonus: c_d is varying spanwise
 
 N = 50;
 y_bt2 = linspace(-b_p3/2,b_p3/2,N); %span
 c_y_bt2 = cr_p3 - (((cr_p3 - ct_p3)/(b_p3/2)).*(abs(y_bt2))); %chord func spanwise
 S = (1/2) * (cr_p3 + ct_p3) * b_p3;
 
-cl_y_all  = zeros(length(alphas), N);  % store cl_y for each alpha
-CD_0_new = zeros(1, length(alphas));
+mtot_ec = ((0 - 2) / (b_p3 / 2)) .* y_bt2 + 2;
+ptot_ec = ((0 - 4) / (b_p3 / 2)) .* y_bt2 + 4;
+ttot_ec = ((12 - 12) / (b_p3 / 2)) .* y_bt2 + 12; % creating linear distribution of airfoils
 
-for i = 1:length(alphas)
-    [e_p3(i),c_L_p3(i),c_Di_p3(i), delta_out_p3(i),cl_y] = PLLT_p3(b_p3, fits(1).a0_panel, fits(2).a0_panel, ct_p3, cr_p3, fits(1).aL0_panel * (pi / 180), fits(2).aL0_panel * (pi / 180), alphas(i) * (pi /180), alphas(i) + (2*pi / 180), N,c_y_bt2);
-    cl_y_all(i, :) = cl_y;  % store sectional lift for this alpha
+for i = 1:length(y_bt2)
+    [xec,yec] = NACAgenerator(mtot_ec(i), ptot_ec(i), ttot_ec(i), 200, 120); % approx sectional airfoil shape along span
+    for j = 1:length(alphas)
+        [Cl_y(i,j)] = Vortex_Panel(xec,yec,alphas(j)); % find sectional cl for sectional airfoil
+        cd_y(i,j) = cd_from_cl(Cl_y(i,j)); % find sectional cd from sectional cl
+    end
 end
 
-for i = 1:length(alphas)
-    cl_y_vec = cl_y_all(i,:);
-    cd_y = cd_from_cl(cl_y_vec);
-    CD_0_new(i) = trapz(y_bt2, c_y_bt2 .* cd_y) / S;
-end
+CD_0_new = trapz(y_bt2, c_y_bt2' .* cd_y, 1) ./ S; % integrate along columns of cd_y to get one value of wing profile drag for each AoA
 
 figure(8); 
 hold on; 
-plot(y_bt2,cd_y,'r-','LineWidth',2);
+plot(y_bt2,cd_y(:,16),'r-','LineWidth',2);
 xlabel('y');
 ylabel('c_d(y) ');
 title('Sectional Drag Coefficent varying with Span');
@@ -326,7 +329,13 @@ ylabel('CD_0');
 title('Profile Drag vs Angle of Attack');
 hold off;
 
-% task 4
+figure(6);
+hold on;
+plot(alphas,CD_0_new,'r-','LineWidth',2,'DisplayName','C_D_0(\alpha) Varying Span Distribution');
+legend
+hold off;
+
+%% task 4
 % thrust must equal profile drag, lift must equal weight, airspeed effects
 % cl, cd
 % altitude is at 10,000 ft, weight is 2500 lbs
@@ -343,10 +352,10 @@ for i = 1:length(c_L_p3)
 end
 
 vel_knots = vel.*(1/1.688);
-vel_knots = vel_knots(12:end);
-thrust = thrust(12:end);
+vel_knots = vel_knots(17:end);
+thrust = thrust(17:end);
 
-figure();
+figure(10);
 grid on;
 plot(vel_knots,thrust, 'Color','red',LineWidth=1.2);
 xlabel('Air Speed [knots]');
