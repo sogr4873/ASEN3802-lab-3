@@ -352,8 +352,8 @@ for i = 1:length(c_L_p3)
 end
 
 vel_knots = vel.*(1/1.688);
-vel_knots = vel_knots(17:end);
-thrust = thrust(17:end);
+vel_knots = vel_knots(17:26);
+thrust = thrust(17:26);
 
 figure(15);
 grid on;
@@ -361,3 +361,4 @@ plot(vel_knots,thrust, 'Color','red',LineWidth=1.2);
 xlabel('Air Speed [knots]');
 ylabel('Thrust Required [lbs]');
 title('Thrust Required for Steady Level Flight vs Airspeed');
+
