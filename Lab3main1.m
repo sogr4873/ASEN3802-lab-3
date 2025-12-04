@@ -239,42 +239,40 @@ ylabel('C_L');
 
 % Task 2
 %digitize from page 462 appedix 3 in book to get experimental data
-cl_exp = [-0.8 -0.6 -0.4 -0.2 0.0 0.2 0.4 0.6 0.8 1.0 1.2 1.4 1.6];
-cd_exp = [0.0118 0.0107 0.0098 0.0091 0.0088 0.0090 0.0096 0.0106 0.0120 0.0145 0.0175 0.0215 0.0265];
+cl_exp = readmatrix("NACA0012_cl_alpha_TESTALL.csv"); %cl vs alpha experimental data
+cd_exp = readmatrix("NACA0012_cd_cl.csv"); %cd vs cl
 
-cd_from_cl = @(cl)interp1(cl_exp, cd_exp, cl, 'linear', 'extrap');
+cd_from_cl = @(cl)interp1(cd_exp(:,1), cd_exp(:,2), cl, 'linear', 'extrap'); % continuous cd vs cl func
+cl_from_alpha = @(a)interp1(cl_exp(:,1), cl_exp(:,2), a, 'linear', 'extrap'); % continuous cl vs alpha func
 
 alphas = -10:1:10;
 
-[x12,y12] = NACAgenerator(0,0,12, 0012, 120);
-
-for i = 1:length(alphas)
-    cl_alpha_p3(i) = Vortex_Panel(x12,y12, alphas(i));
-end
-
-cd_alpha = cd_from_cl(cl_alpha_p3);
+cd_cl = cd_from_cl(c_L_p3);
 
 figure(5); 
 hold on; 
-plot(cl_exp,cd_exp,'ko','MarkerFaceColor','w','DisplayName','Experimental Polar');
-plot(cl_alpha_p3,cd_alpha,'r-','LineWidth',2,'DisplayName','Model');
+plot(cd_exp(:,1),cd_exp(:,2),'DisplayName','Experimental Polar');
+plot(c_L_p3,cd_cl,'r-','LineWidth',2,'DisplayName','Model');
 xlabel('Section Lift Coefficient c_l');
 ylabel('Section Drag Coefficient c_d');
 title('NACA 0012 Drag Polar');
+legend
+hold off;
 
 figure(6); 
 hold on;
-plot(alphas,cd_alpha,'b-','LineWidth',2,'DisplayName','c_d(\alpha)');
+plot(alphas,cd_cl,'b-','LineWidth',2,'DisplayName','c_d(\alpha)');
 xlabel('\alpha (deg)');
 ylabel('c_d');
 title('Sectional Drag Coefficient vs Angle of Attack');
+hold off;
 
 % task 3
 y = linspace(-b_p3/2,b_p3/2); %span
 c_y = cr_p3 - (((cr_p3 - ct_p3)/(b_p3/2)).*(abs(y))); %chord func spanwise
 
 for i = 1:length(alphas)
-    CD_0(i) = trapz(y,c_y.*cd_alpha(i));
+    CD_0(i) = trapz(y,c_y.*cd_cl(i));
 end
 
 CD_p3 = CD_0 + c_Di_p3;
@@ -318,6 +316,7 @@ plot(y_bt2,cd_y,'r-','LineWidth',2);
 xlabel('y');
 ylabel('c_d(y) ');
 title('Sectional Drag Coefficent varying with Span');
+hold off;
 
 figure(9); 
 hold on;
@@ -325,5 +324,4 @@ plot(alphas,CD_0_new,'b-','LineWidth',2,'DisplayName','c_d(\alpha)');
 xlabel('\alpha (deg)');
 ylabel('CD_0');
 title('Profile Drag vs Angle of Attack');
-
-
+hold off;
